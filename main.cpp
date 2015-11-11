@@ -33,13 +33,14 @@ private:
 class canonball
 {
 public:
-	canonball(od::Vec2 position, float force, float angle, float zoomRatio, od::Vec2 targetPos, od::Vec2 canonPos) : position(position),
-																													 forcex(sin(dectorad(angle)) * force * zoomRatio), forcey(cos(dectorad(angle)) * force * zoomRatio),
-																													 angle(angle),
-																													 zoomRatio(zoomRatio),
-																													 distCanonTarget(od::pointDistance(targetPos.x, targetPos.y, canonPos.x, canonPos.y)),
-																													 spriteid(od::spriteIndex("canonball")),
-																													 canonPos(canonPos) {}
+	canonball(od::Vec2 position, float force, float angle, float zoomRatio, od::Vec2 targetPos, od::Vec2 canonPos) :
+			position(position),
+			forcex(sin(dectorad(angle)) * force * zoomRatio), forcey(cos(dectorad(angle)) * force * zoomRatio),
+			angle(angle),
+			zoomRatio(zoomRatio),
+			distCanonTarget(od::pointDistance(targetPos.x, targetPos.y, canonPos.x, canonPos.y)),
+			spriteid(od::spriteIndex("canonball")),
+			canonPos(canonPos) {}
 
 	void tick(float deltaTime)
 	{
