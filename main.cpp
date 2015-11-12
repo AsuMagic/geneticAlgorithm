@@ -6,6 +6,8 @@
 #include <random>
 #include <onidev.h>
 
+#include "geneticAlgorithm.hpp"
+
 const od::Color sky_lightblue(203, 219, 252);
 const od::Color sky_blue(120, 160, 255);
 
@@ -75,118 +77,6 @@ private:
 	int spriteid;
 	od::Vec2 canonPos;
 	bool hasReachedLimits = false;
-};
-
-// @TODO : Templates?
-struct gene
-{
-	float data, minData, maxData, variationRange;
-};
-
-struct DNAObject
-{
-	float score = 0;
-	std::vector<gene> genes;
-};
-
-bool scoreSorting(DNAObject obj1, DNAObject obj2) { return obj1.score > obj2.score; }
-
-class geneticAlgorithm
-{
-public:
-	geneticAlgorithm() : mt(time(NULL)) {}
-
-	virtual void newGeneration()
-	{
-		currentScore = 0.;
-		for (int i = 0; i < std::min(10, static_cast<int>(objects.size())); ++i)
-			currentScore += objects[i].score / objects.size();
-
-		lastScore = 0.;
-		for (int i = 0; i < std::min(10, static_cast<int>(lastGenObjects.size())); ++i)
-			lastScore += lastGenObjects[i].score / lastGenObjects.size();
-
-		if (lastScore > currentScore)
-		{
-			//objects = lastGenObjects;
-		}
-		else
-		{
-			lastGenObjects = objects;
-			++gen;
-		}
-
-		std::sort(objects.begin(), objects.end(), scoreSorting);
-		objects.resize(std::min(static_cast<unsigned int>(5), objects.size()));
-
-		for (gene& i : basegenes)
-		{
-			i.variationRange *= 0.95;
-		}
-
-		for (unsigned int i = 0; i < objects.size() - 1; i += 2)
-		{
-			DNAObject children;
-			children.genes.resize(objects[i].genes.size());
-			for (unsigned int j = 0; j < objects[i].genes.size(); ++j)
-			{
-				children.genes[j].data = (objects[i].genes[j].data + objects[i+1].genes[j].data) / 2.f;
-			}
-
-			objects.push_back(children);
-		}
-
-		for (unsigned int i = 0; i < objects.size(); i++)
-		{
-			for (unsigned int j = 0; j < objects[i].genes.size(); ++j)
-			{
-				std::uniform_real_distribution<float> dist(-basegenes[j].variationRange, basegenes[j].variationRange);
-				float randval = dist(mt);
-				objects[i].genes[j].data = std::min(basegenes[j].maxData, std::max(objects[i].genes[j].data + randval, basegenes[j].minData));
-			}
-		}
-	}
-
-	void setScoreFor(int index, float score) { objects[index].score = score; }
-	float getScoreFor(int index) const { return objects[index].score; }
-
-	double getLastIterationScore() { return currentScore; }
-	double getLastGenerationScore() { return lastScore; }
-
-	virtual int addDNAObject(DNAObject obj)
-	{
-        objects.push_back(obj);
-        return objects.size() - 1;
-	}
-
-	int addRandomDNAObject()
-	{
-		DNAObject obj;
-		obj.genes.resize(basegenes.size());
-		for (unsigned int i = 0; i < basegenes.size(); ++i)
-		{
-			std::uniform_real_distribution<float> dist(basegenes[i].minData, basegenes[i].maxData);
-            obj.genes[i].data = dist(mt);
-		}
-
-		return addDNAObject(obj);
-	}
-
-	const DNAObject& getObjectData(int index)
-	{
-		return objects[index];
-	}
-
-	unsigned int getGeneration() const { return gen; }
-	unsigned int getObjectCount() const { return objects.size(); }
-
-protected:
-	unsigned int gen = 0;
-	std::vector<gene> basegenes;
-	std::vector<DNAObject> objects, lastGenObjects;
-
-	double currentScore = 0., lastScore = 0.;
-	std::mt19937 mt;
 };
 
 class canonGA : public virtual geneticAlgorithm
@@ -334,7 +224,7 @@ int main()
     canonGA algorithm(Vec2(canonx, canony), t.getPosition(), zoomRatio);
 
 	for (int i = 0; i < 10; ++i)
-		algorithm.addRandomDNAObject();
+		algorithm.addDNAObject(DNAObject::makeRandomFrom(algorithm.originalGenes, mt));
 
     while(win.open())
     {
