@@ -106,11 +106,7 @@ public:
 		for (int i = 0; i < std::min(10, static_cast<int>(lastGenObjects.size())); ++i)
 			lastScore += lastGenObjects[i].score / lastGenObjects.size();
 
-		if (lastScore > currentScore)
-		{
-			//objects = lastGenObjects;
-		}
-		else
+		if (lastScore < currentScore)
 		{
 			lastGenObjects = objects;
 			++gen;
